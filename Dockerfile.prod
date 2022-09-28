@@ -1,0 +1,14 @@
+# Step 1: Build stage
+FROM node:14.20.0-alpine3.16 AS build-stage
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+ENV REACT_APP_NODE_ENV=prod
+RUN npm run build
+
+# Step 2: Production stage
+FROM nginx:1.23.1-alpine AS production-stage
+COPY --from=build-stage /app/build /usr/share/nginx/html
+EXPOSE 80
+ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
